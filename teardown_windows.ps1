@@ -2,7 +2,8 @@
 # Safely removes the n8n stack. Asks before each step.
 # Nothing is deleted without your confirmation.
 #
-# Run in PowerShell:  .\teardown.ps1
+# Students: just double-click teardown_windows.bat in File Explorer.
+# This file is the internal script the wrapper calls.
 
 $ErrorActionPreference = "Stop"
 

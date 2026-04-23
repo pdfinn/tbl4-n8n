@@ -3,7 +3,8 @@
 # Desktop installed (from the tbl4-local-llm setup).
 # It is safe to run multiple times.
 #
-# Run in PowerShell:  .\setup.ps1
+# Students: just double-click setup_windows.bat in File Explorer.
+# This file is the internal script the wrapper calls.
 
 $ErrorActionPreference = "Stop"
 
@@ -97,10 +98,11 @@ Write-Host "  On first launch you will create an"
 Write-Host "  owner account (just pick any email"
 Write-Host "  and password - it is local only)."
 Write-Host ""
-Write-Host "  To stop n8n:"
-Write-Host "    docker compose down"
+Write-Host "  Next time, just double-click setup_windows.bat"
+Write-Host "  again. It is safe to re-run any time."
 Write-Host ""
-Write-Host "  To start again later:"
-Write-Host "    docker compose up -d"
+Write-Host "  Advanced (from the command line):"
+Write-Host "    Stop:  docker compose down"
+Write-Host "    Start: docker compose up -d"
 Write-Host "========================================="
 Write-Host ""
