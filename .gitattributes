@@ -1,0 +1,12 @@
+# Windows batch files must use CRLF line endings. cmd.exe is unreliable
+# with LF-only .bat files and can silently fail.
+*.bat    text eol=crlf
+*.cmd    text eol=crlf
+
+# PowerShell scripts: CRLF for Windows. Files are kept pure ASCII (no BOM,
+# no Unicode box-drawing or em-dash characters) so Windows PowerShell 5.1
+# and PowerShell 7+ both parse them regardless of console code page.
+*.ps1    text eol=crlf
+
+# Keep macOS scripts LF.
+*.command    text eol=lf

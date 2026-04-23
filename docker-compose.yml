@@ -1,7 +1,36 @@
 services:
+  # One-shot: seeds a pre-configured Ollama credential into the n8n database on
+  # a fresh volume, so students don't have to create it by hand on first run.
+  # Runs, imports, touches a sentinel, and exits. n8n waits for it to finish.
+  n8n-init:
+    image: n8nio/n8n:latest
+    container_name: n8n-init
+    user: "node"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n-init/credentials.json:/tmp/credentials.json:ro
+    environment:
+      - N8N_ENCRYPTION_KEY=tbl4-classroom-key-2026
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        if [ -f /home/node/.n8n/.tbl4-seeded ]; then
+          echo "credentials already seeded; skipping"
+          exit 0
+        fi
+        echo "seeding Ollama credential..."
+        n8n import:credentials --input=/tmp/credentials.json
+        touch /home/node/.n8n/.tbl4-seeded
+        echo "done"
+    restart: "no"
+
   n8n:
     image: n8nio/n8n:latest
     container_name: n8n
+    depends_on:
+      n8n-init:
+        condition: service_completed_successfully
     ports:
       - "${N8N_PORT:-5678}:5678"
     volumes:

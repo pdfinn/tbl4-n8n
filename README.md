@@ -56,13 +56,9 @@ You will be asked to **create an owner account**. Pick any email and password yo
 
 ## Using Ollama in n8n
 
-To use your local LLM in workflows:
+The Ollama credential is **already set up for you**. When you add an Ollama Chat Model or Embeddings node to a workflow, pick **Ollama (local)** from the credential dropdown — it points at your local Ollama on `http://host.docker.internal:11434`.
 
-1. In n8n, go to **Settings > Credentials > Add Credential**
-2. Search for **Ollama**
-3. Set the base URL to: `http://host.docker.internal:11434`
-4. Save the credential
-5. Now you can use the **Ollama Chat Model** and **Ollama Embeddings** nodes in your workflows
+Make sure Ollama itself is running (from the [tbl4-local-llm](https://github.com/pdfinn/tbl4-local-llm) setup) before you try to execute a workflow that uses it.
 
 ## Using it next time
 
@@ -111,6 +107,7 @@ Double-click the file for your operating system:
 | Ollama node says "connection refused" | Make sure Ollama is running: `ollama serve` |
 | Ollama node can't find models | Check the base URL is `http://host.docker.internal:11434` (not `localhost`) |
 | Windows: setup window flashes and closes | Right-click `setup_windows.bat` → **Run as administrator**, or run it from an already-open PowerShell/Command Prompt so you can read any error |
+| Windows: window opens but body is transparent (only title bar + drop shadow visible) | This is a Windows 11 Terminal rendering bug. Close the ghost window and double-click `setup_windows.bat` again — the script force-launches a classic console window that should render correctly |
 | macOS: "cannot be opened because it is from an unidentified developer" | Right-click `setup_macos.command` → **Open** → **Open**. You only need to do this once. |
 
 ---

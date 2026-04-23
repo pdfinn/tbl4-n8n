@@ -1,10 +1,14 @@
-﻿# ─── TBL4 n8n Setup (Windows) ───────────────────────────────────────────────
+# --- TBL4 n8n Setup (Windows) -----------------------------------------------
 # This script starts n8n with Docker. It assumes you already have Docker
 # Desktop installed (from the tbl4-local-llm setup).
 # It is safe to run multiple times.
 #
 # Students: just double-click setup_windows.bat in File Explorer.
 # This file is the internal script the wrapper calls.
+#
+# Note: this file is intentionally pure ASCII (no BOM, no Unicode box-drawing
+# characters, no em-dashes). That keeps it parseable by both Windows
+# PowerShell 5.1 and PowerShell 7+ regardless of the console code page.
 
 $ErrorActionPreference = "Stop"
 
@@ -14,11 +18,11 @@ function Fail($msg)  { Write-Host "[ERR] $msg" -ForegroundColor Red; exit 1 }
 
 Write-Host ""
 Write-Host "========================================="
-Write-Host "  Tarkas Brainlab IV — n8n Setup"
+Write-Host "  Tarkas Brainlab IV - n8n Setup"
 Write-Host "========================================="
 Write-Host ""
 
-# ─── Load config ─────────────────────────────────────────────────────────────
+# --- Load config ------------------------------------------------------------
 if (-not (Test-Path .env)) {
     Copy-Item .env.example .env
     Info "Created .env from .env.example"
@@ -33,7 +37,7 @@ Get-Content .env | ForEach-Object {
 
 $N8nPort = if ($envVars["N8N_PORT"]) { $envVars["N8N_PORT"] } else { "5678" }
 
-# ─── Check: Docker ───────────────────────────────────────────────────────────
+# --- Check: Docker ----------------------------------------------------------
 try {
     $null = Get-Command docker -ErrorAction Stop
 } catch {
@@ -47,7 +51,7 @@ try {
 }
 Info "Docker is running"
 
-# ─── Check: Ollama (optional, for AI workflows) ─────────────────────────────
+# --- Check: Ollama (optional, for AI workflows) -----------------------------
 $ollamaRunning = $false
 try {
     $null = Invoke-RestMethod -Uri "http://localhost:11434/api/tags" -TimeoutSec 2
@@ -61,13 +65,13 @@ if ($ollamaRunning) {
     Write-Host "       that use Ollama won't connect until you start it."
 }
 
-# ─── Start n8n ───────────────────────────────────────────────────────────────
+# --- Start n8n --------------------------------------------------------------
 Write-Host ""
 Write-Host "Starting n8n..."
 & docker compose up -d
 Info "n8n is running"
 
-# ─── Wait for n8n to be ready ────────────────────────────────────────────────
+# --- Wait for n8n to be ready -----------------------------------------------
 Write-Host ""
 Write-Host "Waiting for n8n to start up..."
 $ready = $false
@@ -86,7 +90,7 @@ if ($ready) {
     Warn "n8n is still starting up - give it another minute, then check the URL below"
 }
 
-# ─── Done ────────────────────────────────────────────────────────────────────
+# --- Done -------------------------------------------------------------------
 Write-Host ""
 Write-Host "========================================="
 Write-Host "  Setup complete!"
@@ -106,3 +110,4 @@ Write-Host "    Stop:  docker compose down"
 Write-Host "    Start: docker compose up -d"
 Write-Host "========================================="
 Write-Host ""
+Read-Host "Press Enter to close this window"
