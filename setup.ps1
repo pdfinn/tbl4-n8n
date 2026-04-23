@@ -1,4 +1,4 @@
-# ─── TBL4 n8n Setup (Windows) ───────────────────────────────────────────────
+﻿# ─── TBL4 n8n Setup (Windows) ───────────────────────────────────────────────
 # This script starts n8n with Docker. It assumes you already have Docker
 # Desktop installed (from the tbl4-local-llm setup).
 # It is safe to run multiple times.

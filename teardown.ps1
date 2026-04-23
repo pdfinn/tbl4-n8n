@@ -1,4 +1,4 @@
-# ─── Tarkas Brainlab IV — n8n Teardown (Windows) ────────────────────────────
+﻿# ─── Tarkas Brainlab IV — n8n Teardown (Windows) ────────────────────────────
 # Safely removes the n8n stack. Asks before each step.
 # Nothing is deleted without your confirmation.
 #

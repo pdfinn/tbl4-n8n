@@ -38,16 +38,21 @@ chmod +x setup.sh
 
 ### Windows
 
-Open **PowerShell** and run:
+1. [Download the repository as a ZIP](https://github.com/pdfinn/tbl4-n8n/archive/refs/heads/main.zip) and unzip it anywhere (e.g. your Desktop).
+2. Open the unzipped folder and **double-click `setup.bat`**.
+
+That's it — a window will open and walk you through the install. Leave it open until it finishes.
+
+<details>
+<summary>Prefer the command line?</summary>
 
 ```powershell
 git clone https://github.com/pdfinn/tbl4-n8n.git
 cd tbl4-n8n
-.\setup.ps1
+.\setup.bat
 ```
 
-> If you get a script execution error, run this first:
-> `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
+</details>
 
 ## First launch
 
@@ -95,9 +100,8 @@ chmod +x teardown.sh
 ```
 
 **Windows:**
-```powershell
-.\teardown.ps1
-```
+
+Double-click `teardown.bat`.
 
 ## Troubleshooting
 
@@ -108,7 +112,7 @@ chmod +x teardown.sh
 | Port 5678 is already in use | Edit `.env` and change `N8N_PORT` to another number (e.g., `5679`) |
 | Ollama node says "connection refused" | Make sure Ollama is running: `ollama serve` |
 | Ollama node can't find models | Check the base URL is `http://host.docker.internal:11434` (not `localhost`) |
-| Windows script won't run | Run: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` |
+| Windows: setup window flashes and closes | Right-click `setup.bat` → **Run as administrator**, or run it from an already-open PowerShell/Command Prompt so you can read any error |
 
 ---
 
