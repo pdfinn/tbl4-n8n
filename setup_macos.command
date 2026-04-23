@@ -6,6 +6,10 @@ set -euo pipefail
 # Desktop installed (from the tbl4-local-llm setup).
 # It is safe to run multiple times.
 
+# Double-clicking a .command file launches it from the user's home dir,
+# so jump to the script's own directory before doing anything.
+cd "$(dirname "$0")"
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'

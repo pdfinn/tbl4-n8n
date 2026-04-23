@@ -5,6 +5,10 @@ set -euo pipefail
 # Safely removes the n8n stack. Asks before each step.
 # Nothing is deleted without your confirmation.
 
+# Double-clicking a .command file launches it from the user's home dir,
+# so jump to the script's own directory before doing anything.
+cd "$(dirname "$0")"
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'

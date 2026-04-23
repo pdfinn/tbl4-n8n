@@ -40,6 +40,7 @@ services:
       - GENERIC_TIMEZONE=America/New_York
       - N8N_DIAGNOSTICS_ENABLED=false
       - N8N_TEMPLATES_ENABLED=true
+      - N8N_SECURE_COOKIE=false
       - OLLAMA_HOST=http://host.docker.internal:11434
     extra_hosts:
       - "host.docker.internal:host-gateway"
