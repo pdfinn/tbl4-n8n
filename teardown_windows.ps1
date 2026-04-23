@@ -58,10 +58,10 @@ if ($volume) {
 }
 
 # --- Step 3: Remove n8n Docker image ----------------------------------------
-$image = docker images n8nio/n8n -q 2>$null
+$image = docker images docker.n8n.io/n8nio/n8n -q 2>$null
 if ($image) {
     if (Confirm-Step "Remove the n8n Docker image? (Frees ~600MB of disk space.)") {
-        docker rmi n8nio/n8n:latest
+        docker rmi docker.n8n.io/n8nio/n8n:latest
         Info "n8n Docker image removed"
     } else {
         Skip "n8n Docker image"

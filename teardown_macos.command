@@ -64,10 +64,10 @@ else
 fi
 
 # ─── Step 3: Remove n8n Docker image ───────────────────────────────────────
-IMAGE_ID=$(docker images n8nio/n8n -q 2>/dev/null || true)
+IMAGE_ID=$(docker images docker.n8n.io/n8nio/n8n -q 2>/dev/null || true)
 if [ -n "$IMAGE_ID" ]; then
     if confirm "Remove the n8n Docker image? (Frees ~600MB of disk space.)"; then
-        docker rmi n8nio/n8n:latest
+        docker rmi docker.n8n.io/n8nio/n8n:latest
         info "n8n Docker image removed"
     else
         skip "n8n Docker image"
