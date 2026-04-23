@@ -12,9 +12,28 @@
 
 $ErrorActionPreference = "Stop"
 
+function Pause-AndExit($code = 0) {
+    Write-Host ""
+    Read-Host "Press Enter to close this window"
+    exit $code
+}
+
 function Info($msg)  { Write-Host "[OK]  $msg" -ForegroundColor Green }
 function Warn($msg)  { Write-Host "[!!]  $msg" -ForegroundColor Yellow }
-function Fail($msg)  { Write-Host "[ERR] $msg" -ForegroundColor Red; exit 1 }
+function Fail($msg)  {
+    Write-Host "[ERR] $msg" -ForegroundColor Red
+    Pause-AndExit 1
+}
+
+# Catch any unhandled error so the window doesn't vanish before the student
+# can read the message. Without this, $ErrorActionPreference = "Stop" plus a
+# thrown exception closes the window instantly.
+trap {
+    Write-Host ""
+    Write-Host "[ERR] Unexpected error:" -ForegroundColor Red
+    Write-Host "      $_" -ForegroundColor Red
+    Pause-AndExit 1
+}
 
 Write-Host ""
 Write-Host "========================================="
@@ -44,10 +63,16 @@ try {
     Fail "Docker is not installed. Please install Docker Desktop first:`nhttps://www.docker.com/products/docker-desktop/`n`nIf you already ran the tbl4-local-llm setup, Docker should be installed.`nMake sure Docker Desktop is open and running."
 }
 
+$dockerOk = $false
 try {
-    $null = docker info 2>&1
+    $null = docker info 2>$null
+    $dockerOk = ($LASTEXITCODE -eq 0)
 } catch {
-    Fail "Docker is not running. Please start Docker Desktop and try again."
+    # PS 5.1 with $ErrorActionPreference = "Stop" wraps stderr from native
+    # commands as ErrorRecord and throws. Swallow here; $dockerOk stays false.
+}
+if (-not $dockerOk) {
+    Fail "Docker is not running yet. Open Docker Desktop, wait until the whale icon in the system tray is steady (not animated), then double-click setup_windows.bat again."
 }
 Info "Docker is running"
 
@@ -109,5 +134,4 @@ Write-Host "  Advanced (from the command line):"
 Write-Host "    Stop:  docker compose down"
 Write-Host "    Start: docker compose up -d"
 Write-Host "========================================="
-Write-Host ""
-Read-Host "Press Enter to close this window"
+Pause-AndExit 0

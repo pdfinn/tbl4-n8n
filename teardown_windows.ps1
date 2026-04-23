@@ -10,9 +10,28 @@
 
 $ErrorActionPreference = "Stop"
 
+function Pause-AndExit($code = 0) {
+    Write-Host ""
+    Read-Host "Press Enter to close this window"
+    exit $code
+}
+
 function Info($msg)  { Write-Host "[OK]  $msg" -ForegroundColor Green }
 function Warn($msg)  { Write-Host "[!!]  $msg" -ForegroundColor Yellow }
 function Skip($msg)  { Write-Host "[--]  Skipped: $msg" -ForegroundColor Yellow }
+function Fail($msg)  {
+    Write-Host "[ERR] $msg" -ForegroundColor Red
+    Pause-AndExit 1
+}
+
+# Catch any unhandled error so the window doesn't vanish before the student
+# can read the message.
+trap {
+    Write-Host ""
+    Write-Host "[ERR] Unexpected error:" -ForegroundColor Red
+    Write-Host "      $_" -ForegroundColor Red
+    Pause-AndExit 1
+}
 
 function Confirm-Step($message) {
     Write-Host ""
@@ -79,5 +98,4 @@ Write-Host "  This script only removes n8n."
 Write-Host "  Your Ollama and Open WebUI setup"
 Write-Host "  (from tbl4-local-llm) is not affected."
 Write-Host "========================================="
-Write-Host ""
-Read-Host "Press Enter to close this window"
+Pause-AndExit 0
