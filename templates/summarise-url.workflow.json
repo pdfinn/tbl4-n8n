@@ -1,9 +1,10 @@
 {
+  "id": "tbl4SummariseUrl",
   "name": "Summarise URL (classroom starter)",
   "nodes": [
     {
       "id": "webhook",
-      "name": "POST /webhook/summarise-url",
+      "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [240, 400],
@@ -16,48 +17,13 @@
     },
     {
       "id": "fetch",
-      "name": "Fetch URL",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "name": "Fetch and prepare",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [480, 400],
       "parameters": {
-        "method": "GET",
-        "url": "={{ $json.body.url }}",
-        "responseFormat": "text",
-        "options": {
-          "response": {
-            "response": {
-              "responseFormat": "text",
-              "neverError": true
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "cap",
-      "name": "Cap content length",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3,
-      "position": [720, 400],
-      "parameters": {
-        "mode": "manual",
-        "assignments": {
-          "assignments": [
-            {
-              "id": "1",
-              "name": "content",
-              "type": "string",
-              "value": "={{ String($json.data || '').slice(0, 6000) }}"
-            },
-            {
-              "id": "2",
-              "name": "focus",
-              "type": "string",
-              "value": "={{ $('POST /webhook/summarise-url').item.json.body.focus || '' }}"
-            }
-          ]
-        }
+        "language": "javaScript",
+        "jsCode": "const body = $input.first().json.body || {};\nconst rawUrl = (body.url || '').trim();\nif (!rawUrl) {\n  throw new Error('Missing `url` in request body.');\n}\nconst url = rawUrl.match(/^https?:\\/\\//i) ? rawUrl : 'https://' + rawUrl;\nconst focus = (body.focus || '').toString();\n\nconst response = await this.helpers.httpRequest({\n  method: 'GET',\n  url,\n  followRedirect: true,\n  returnFullResponse: false,\n  ignoreHttpStatusErrors: true,\n  headers: {\n    'User-Agent': 'Mozilla/5.0 (tbl4-classroom summarise-url)'\n  }\n});\n\nconst raw = typeof response === 'string' ? response : JSON.stringify(response);\nconst stripped = raw\n  .replace(/<script[\\s\\S]*?<\\/script>/gi, ' ')\n  .replace(/<style[\\s\\S]*?<\\/style>/gi, ' ')\n  .replace(/<[^>]+>/g, ' ')\n  .replace(/\\s+/g, ' ')\n  .trim();\nconst content = stripped.slice(0, 6000);\n\nreturn [{ json: { url, focus, content, fetchedChars: stripped.length } }];"
       }
     },
     {
@@ -65,10 +31,10 @@
       "name": "Summarise",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.9,
-      "position": [960, 400],
+      "position": [720, 400],
       "parameters": {
         "promptType": "define",
-        "text": "=Summarise the following web page in 5 short bullet points. Keep the summary factual; skip navigation chrome, footers, and boilerplate.\n\n{{ $json.focus ? ('Focus especially on: ' + $json.focus + '.\\n\\n') : '' }}Page content:\n{{ $json.content }}"
+        "text": "=Summarise the following web page in 5 short factual bullet points. Use only the content provided below — do not invent facts. If the content is empty or does not make sense, say so plainly.\n\n{{ $json.focus ? ('Focus especially on: ' + $json.focus + '.\\n\\n') : '' }}URL: {{ $json.url }}\n\n--- PAGE CONTENT START ---\n{{ $json.content }}\n--- PAGE CONTENT END ---"
       }
     },
     {
@@ -76,9 +42,9 @@
       "name": "Ollama Chat Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
       "typeVersion": 1,
-      "position": [960, 600],
+      "position": [720, 600],
       "parameters": {
-        "model": "llama3.2:latest"
+        "model": "llama3.1:latest"
       },
       "credentials": {
         "ollamaApi": {
@@ -92,10 +58,10 @@
       "name": "Respond",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1240, 400],
+      "position": [980, 400],
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ ({ summary: $json.text }) }}"
+        "responseBody": "={{ ({ summary: $json.text, sourceUrl: $('Fetch and prepare').item.json.url }) }}"
       }
     },
     {
@@ -103,36 +69,20 @@
       "name": "What this is",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [200, 60],
+      "position": [200, 40],
       "parameters": {
         "width": 960,
         "height": 240,
         "color": 7,
-        "content": "## Summarise URL — classroom starter\n\nThe first tool the chat model calls. Flow:\n\n1. **Webhook** receives `{ url, focus? }` from OpenWebUI.\n2. **Fetch URL** downloads the page (text, never-error so we don't 500 on a bad URL).\n3. **Cap content length** trims to 6 KB so we don't blow the LLM's context window.\n4. **Summarise** (Basic LLM Chain + Ollama sub-node) returns a 5-bullet summary.\n5. **Respond** sends `{ summary: ... }` back to OpenWebUI.\n\nThis workflow is **auto-imported and published** by the tbl4-n8n init container. You can edit it in place — your changes persist in the n8n volume."
-      }
-    },
-    {
-      "id": "note-model",
-      "name": "Model note",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [880, 780],
-      "parameters": {
-        "width": 340,
-        "height": 180,
-        "color": 4,
-        "content": "## Model\n\nPinned to `llama3.2:latest` — that's the default `MODEL` students pull during `tbl4-local-llm` setup. If you changed `.env` to a different model, update this node to match (or the Ollama node will 404).\n\nFirst call after a cold Ollama takes 20-40s; subsequent calls are fast."
+        "content": "## Summarise URL — classroom starter\n\n**Publish this workflow via the UI** (button top-right) so it answers at `/webhook/summarise-url`. CLI publish creates URL-prefixed paths that break the Tool Server pattern — use the UI button.\n\nFlow:\n1. Webhook receives `{ url, focus? }` from OpenWebUI.\n2. Fetch and prepare (Code node): normalise URL, fetch page with redirects, strip HTML, cap at 6 KB.\n3. Summarise (Basic LLM Chain + Ollama sub-node): 5 factual bullets.\n4. Respond sends `{ summary, sourceUrl }` back.\n\nOnce this AND the TBL4 Tool Server workflow are both published, OpenWebUI's chat model can call `summariseUrl` as a tool."
       }
     }
   ],
   "connections": {
-    "POST /webhook/summarise-url": {
-      "main": [[{ "node": "Fetch URL", "type": "main", "index": 0 }]]
+    "Webhook": {
+      "main": [[{ "node": "Fetch and prepare", "type": "main", "index": 0 }]]
     },
-    "Fetch URL": {
-      "main": [[{ "node": "Cap content length", "type": "main", "index": 0 }]]
-    },
-    "Cap content length": {
+    "Fetch and prepare": {
       "main": [[{ "node": "Summarise", "type": "main", "index": 0 }]]
     },
     "Ollama Chat Model": {

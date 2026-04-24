@@ -28,8 +28,12 @@ services:
         n8n import:credentials --input=/tmp/credentials.json
         echo "importing starter workflows..."
         n8n import:workflow --separate --input=/tmp/workflows/
-        echo "activating workflows..."
-        n8n update:workflow --all --active=true
+        # Do NOT auto-publish. CLI `publish:workflow` in n8n 2.18 prefixes
+        # webhook URLs with the workflow ID, which breaks the simple URL
+        # pattern our OpenAPI spec and OpenWebUI Tool Server registration
+        # rely on. The imported workflows show up as drafts; the student
+        # clicks **Publish** in the editor toolbar once per workflow and
+        # gets clean `/webhook/openapi.json` + `/webhook/summarise-url`.
         touch /home/node/.n8n/.tbl4-seeded
         echo "done"
     restart: "no"
