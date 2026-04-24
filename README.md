@@ -65,20 +65,30 @@ Make sure Ollama itself is running (from the [tbl4-local-llm](https://github.com
 When the container starts for the first time (empty n8n volume), a one-shot `n8n-init` job runs before n8n itself and pre-populates:
 
 - The **Ollama (local)** credential (pointing at `host.docker.internal:11434`).
-- The **TBL4 Tool Server** workflow — publishes an OpenAPI spec at `GET /webhook/openapi.json` so OpenWebUI can list the classroom tools.
-- The **Summarise URL** workflow — the first reference tool; answers `POST /webhook/summarise-url` with an Ollama-generated summary of any fetched page.
+- The **Summarise URL (classroom starter)** workflow — webhook-triggered worker that does the actual summarisation work.
+- The **MCP Tools (for OpenWebUI)** workflow — exposes the summariseUrl worker (and any future tools you add) over the Model Context Protocol so OpenWebUI can consume them as an MCP tool server.
 
-Both workflows are **imported and activated** automatically. You land on a working chain. Open them in the editor to see the sticky notes explaining the pattern.
+Both workflows are imported as **drafts**; n8n 2.18 requires you to click **Publish** (top-right of the editor) on each one before the webhooks register. This is the only mandatory manual step post-setup.
 
 A `.tbl4-seeded` sentinel file in the n8n data volume makes the seed a one-shot — re-running the setup script is safe and won't clobber edits you've made.
+
+### URL reference (after you publish)
+
+| Consumer | URL | Purpose |
+|---|---|---|
+| OpenWebUI (MCP tool server) | `http://host.docker.internal:5678/webhook/mcpTools/mcp/tools` | Streamable-HTTP MCP endpoint |
+| OpenWebUI Python Tool | `http://host.docker.internal:5678/webhook/summariseUrl/webhook/summarise-url` | Direct webhook to the worker workflow |
+| Terminal test | Same as above with `localhost` instead of `host.docker.internal` | `curl` from your host |
+
+The `host.docker.internal` form is what containers use to reach each other across Docker networks; students use `localhost` for curl tests from their own shell.
 
 ## Shared folders and templates
 
 - **`./notes/`** — bind-mounted into the n8n container at `/data/notes`. Workflows that write Markdown files (e.g. the "save this as a note" pattern) land here, where you can open them in Finder / Explorer immediately.
-- **`./templates/`** — source JSONs for the workflows described above, plus extra patterns to import by hand:
-  - `tool-server.workflow.json` — the central OpenAPI spec. Auto-imported on first run.
-  - `summarise-url.workflow.json` — reference tool implementation. Auto-imported on first run.
-  - `dual-trigger.workflow.json` — one workflow, two entry points (Webhook + MCP Server Trigger), shared downstream logic. Pattern for exposing the same capability to OpenWebUI via either a plain HTTP tool or MCP. **Not** auto-imported; import manually when you reach Ex 12.
+- **`./templates/`** — source JSONs for the workflows described above:
+  - `summarise-url.workflow.json` — the worker workflow. Auto-imported on first run.
+  - `mcp-tools.workflow.json` — MCP wrapper that exposes `summariseUrl` (and future tools you add) to OpenWebUI. Auto-imported on first run.
+  - `dual-trigger.workflow.json` — older exploration, kept for reference only. Not used by the default classroom path.
 
 ## Using it next time
 

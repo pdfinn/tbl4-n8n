@@ -1,6 +1,6 @@
 {
-  "id": "tbl4",
-  "name": "TBL4 Summarise URL",
+  "id": "summariseUrl",
+  "name": "Summarise URL (classroom starter)",
   "nodes": [
     {
       "id": "webhook",
