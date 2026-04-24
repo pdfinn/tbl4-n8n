@@ -92,6 +92,8 @@ if ($ollamaRunning) {
 
 # --- Start n8n --------------------------------------------------------------
 Write-Host ""
+Write-Host "Fetching the pinned container images (first run only; fast on re-runs)..."
+& docker compose pull --quiet
 Write-Host "Starting n8n..."
 & docker compose up -d
 Info "n8n is running"

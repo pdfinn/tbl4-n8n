@@ -1,0 +1,139 @@
+{
+  "name": "Dual-Trigger Template (Webhook + MCP)",
+  "nodes": [
+    {
+      "id": "webhook",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dual-trigger",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "normalise",
+      "name": "Normalise Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [640, 400],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "prompt",
+              "type": "string",
+              "value": "={{ $json.body?.prompt || $json.prompt || $json.query || '' }}"
+            },
+            {
+              "id": "2",
+              "name": "source",
+              "type": "string",
+              "value": "={{ $node['Webhook Trigger']?.json ? 'webhook' : 'mcp' }}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "business-placeholder",
+      "name": "Your Business Logic",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [900, 400],
+      "parameters": {}
+    },
+    {
+      "id": "respond",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1160, 400],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { result: $json } }}"
+      }
+    },
+    {
+      "id": "note-goal",
+      "name": "Goal",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [200, 60],
+      "parameters": {
+        "width": 900,
+        "height": 200,
+        "color": 7,
+        "content": "## Dual-Trigger Template — Webhook + MCP\n\nOne workflow, two entry points, same logic in the middle.\n\n- **Webhook Trigger** (left) — plain HTTP POST. Good for quick prototypes and for OpenWebUI's *External Tools* panel when you just want an HTTP endpoint behind an OpenAPI spec.\n- **MCP Server Trigger** — exposes this workflow as an MCP tool the LLM can discover and invoke directly. **Add it from the palette: search \"MCP Server Trigger\" and drop it on the canvas. Wire its output to \"Normalise Input\".**\n\nStudents pick the trigger that matches the task. The downstream graph is identical."
+      }
+    },
+    {
+      "id": "note-normalise",
+      "name": "Why normalise?",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [560, 560],
+      "parameters": {
+        "width": 340,
+        "height": 200,
+        "color": 4,
+        "content": "## Normalise Input\n\nWebhook and MCP deliver arguments in different JSON shapes. This Set node flattens them into a single `prompt` field your business logic can rely on.\n\nIf an MCP trigger defines its own parameter schema, update the expression here to read from that shape too."
+      }
+    },
+    {
+      "id": "note-logic",
+      "name": "Business logic goes here",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [860, 560],
+      "parameters": {
+        "width": 300,
+        "height": 200,
+        "color": 5,
+        "content": "## Your Business Logic\n\nReplace the NoOp with the actual work: HTTP fetch, Ollama summary, file write, whatever the task needs.\n\nKeep this section identical whether the request came via webhook or MCP — that's the point of the normalise step."
+      }
+    },
+    {
+      "id": "note-respond",
+      "name": "Responding",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1120, 560],
+      "parameters": {
+        "width": 300,
+        "height": 200,
+        "color": 6,
+        "content": "## Respond to Webhook\n\nFor webhook calls this sends the JSON back to the caller. MCP Server Trigger handles its own response internally — you can leave this node connected or branch around it with an IF node on `$json.source`."
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          { "node": "Normalise Input", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Normalise Input": {
+      "main": [
+        [
+          { "node": "Your Business Logic", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Your Business Logic": {
+      "main": [
+        [
+          { "node": "Respond to Webhook", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" }
+}

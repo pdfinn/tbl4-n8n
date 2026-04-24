@@ -3,7 +3,7 @@ services:
   # a fresh volume, so students don't have to create it by hand on first run.
   # Runs, imports, touches a sentinel, and exits. n8n waits for it to finish.
   n8n-init:
-    image: docker.n8n.io/n8nio/n8n:latest
+    image: docker.n8n.io/n8nio/n8n:2.18.2
     container_name: n8n-init
     user: "node"
     volumes:
@@ -26,7 +26,7 @@ services:
     restart: "no"
 
   n8n:
-    image: docker.n8n.io/n8nio/n8n:latest
+    image: docker.n8n.io/n8nio/n8n:2.18.2
     container_name: n8n
     depends_on:
       n8n-init:
@@ -35,6 +35,9 @@ services:
       - "${N8N_PORT:-5678}:5678"
     volumes:
       - n8n_data:/home/node/.n8n
+      # Host-shared notes folder. Exercise 9 writes Markdown files here so
+      # students can see AI output land on their real filesystem.
+      - ./notes:/data/notes
     environment:
       - N8N_ENCRYPTION_KEY=tbl4-classroom-key-2026
       - GENERIC_TIMEZONE=America/New_York

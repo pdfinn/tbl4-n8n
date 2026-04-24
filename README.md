@@ -60,6 +60,12 @@ The Ollama credential is **already set up for you**. When you add an Ollama Chat
 
 Make sure Ollama itself is running (from the [tbl4-local-llm](https://github.com/pdfinn/tbl4-local-llm) setup) before you try to execute a workflow that uses it.
 
+## Shared folders and templates
+
+- **`./notes/`** — bind-mounted into the n8n container at `/data/notes`. Workflows that write Markdown files (e.g. the "save this as a note" pattern) land here, where you can open them in Finder / Explorer immediately.
+- **`./templates/`** — reusable workflow JSONs you can import from inside n8n (*Workflows → top-right menu → Import from File*). Start here:
+  - `dual-trigger.workflow.json` — one workflow, two entry points (Webhook + MCP Server Trigger), shared downstream logic. Pattern for exposing the same capability to OpenWebUI via either a plain HTTP tool or MCP.
+
 ## Using it next time
 
 Just run the setup again — it is idempotent and will bring n8n back up for you.

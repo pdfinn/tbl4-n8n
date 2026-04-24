@@ -59,6 +59,8 @@ fi
 
 # ─── Start n8n ───────────────────────────────────────────────────────────────
 echo ""
+echo "Fetching the pinned container images (first run only; fast on re-runs)..."
+docker compose pull --quiet
 echo "Starting n8n..."
 docker compose up -d
 info "n8n is running"
