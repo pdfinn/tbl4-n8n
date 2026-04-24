@@ -122,6 +122,8 @@ purpose, including personal study, research, teaching, and use by
 educational or other noncommercial organizations. Commercial use requires
 a separate license from the copyright holder.
 
+For commercial licensing inquiries, please [open an issue on this repository](https://github.com/pdfinn/tbl4-n8n/issues/new).
+
 ---
 
 <p align="center">
