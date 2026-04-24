@@ -66,7 +66,7 @@ When the container starts for the first time (empty n8n volume), a one-shot `n8n
 
 - The **Ollama (local)** credential (pointing at `host.docker.internal:11434`).
 - The **Summarise URL (classroom starter)** workflow — webhook-triggered worker that does the actual summarisation work.
-- The **MCP Tools (for OpenWebUI)** workflow — exposes the summariseUrl worker (and any future tools you add) over the Model Context Protocol so OpenWebUI can consume them as an MCP tool server.
+- The **MCP Tools (for OpenWebUI)** workflow — exposes the summariseUrl worker (and any future tools you add) over the Model Context Protocol. The n8n side works cleanly (initialize / tools/list / tools/call all verified via curl); **OpenWebUI 0.9.1's MCP client is currently broken** (cancel-scope bug) so this path isn't consumable from OpenWebUI yet. See `tbl4-local-llm/TODO.md` for resolution paths.
 
 Both workflows are imported as **drafts**; n8n 2.18 requires you to click **Publish** (top-right of the editor) on each one before the webhooks register. This is the only mandatory manual step post-setup.
 
