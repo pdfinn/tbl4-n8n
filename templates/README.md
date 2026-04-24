@@ -10,10 +10,10 @@ OpenWebUI's Tool Servers feature doesn't talk directly to webhooks — it talks 
 
 ### Setup (do this first)
 
-1. Import this workflow into n8n. **Activate** it.
+1. Import this workflow into n8n. **Publish** it (newer n8n) or toggle it Active (older n8n).
 2. In OpenWebUI → **Admin Settings → Tools → Tool Servers → Add Tool Server**:
-   - URL: `http://host.docker.internal:5678/webhook/tools`
-   - (OpenWebUI will append `/openapi.json` automatically.)
+   - URL: `http://host.docker.internal:5678/webhook`
+   - (OpenWebUI will append `/openapi.json` automatically, and uses that same base URL to call tools. Spec paths are relative to it — e.g. `/summarise-url`, **not** `/webhook/summarise-url`.)
 3. Click *Verify* or save. OpenWebUI fetches the spec and lists the tools.
 
 ### To add a new tool later
