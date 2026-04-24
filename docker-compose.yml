@@ -13,7 +13,6 @@ services:
       - n8n_data:/home/node/.n8n
       - ./n8n-init/credentials.json:/tmp/credentials.json:ro
       - ./templates/tool-server.workflow.json:/tmp/workflows/tool-server.workflow.json:ro
-      - ./templates/summarise-url.workflow.json:/tmp/workflows/summarise-url.workflow.json:ro
     environment:
       - N8N_ENCRYPTION_KEY=tbl4-classroom-key-2026
     entrypoint: ["/bin/sh", "-c"]
