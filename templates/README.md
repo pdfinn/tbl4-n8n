@@ -1,8 +1,10 @@
 # n8n workflow templates
 
-Reusable starting points. Import from inside n8n: **Workflows → top-right menu → Import from File**.
+Source JSONs for the workflows the classroom depends on. Two of these (`tool-server` and `summarise-url`) are **auto-imported and activated** by the `n8n-init` container on first startup, so students don't need to import them manually. The third (`dual-trigger`) is a pattern you import by hand when you reach the MCP showcase exercise.
 
-## `tool-server.workflow.json`
+Manual import (from inside n8n): **Workflows → top-right menu → Import from File**.
+
+## `tool-server.workflow.json` *(auto-imported)*
 
 **The one-time setup that makes every exercise's webhook callable from OpenWebUI.**
 
@@ -26,7 +28,13 @@ OpenWebUI's Tool Servers feature doesn't talk directly to webhooks — it talks 
 
 The `description` field is what the LLM reads to decide *when* to call the tool. Write it as an instruction to the model, not a developer comment.
 
-## `dual-trigger.workflow.json`
+## `summarise-url.workflow.json` *(auto-imported)*
+
+The first reference tool: `POST /webhook/summarise-url` with `{ "url": "..." }` returns a 5-bullet Ollama-generated summary.
+
+Open this workflow in the editor to see the full node chain (Webhook → HTTP Request → cap content → Basic LLM Chain + Ollama sub-node → Respond). It's the template students copy for their own tools in Exercises 09 and 10.
+
+The model is pinned to `llama3.2:latest` to match the default in `tbl4-local-llm/.env`. If you change that, edit the `Ollama Chat Model` node's model name to match.
 
 ## `dual-trigger.workflow.json`
 

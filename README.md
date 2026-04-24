@@ -60,11 +60,25 @@ The Ollama credential is **already set up for you**. When you add an Ollama Chat
 
 Make sure Ollama itself is running (from the [tbl4-local-llm](https://github.com/pdfinn/tbl4-local-llm) setup) before you try to execute a workflow that uses it.
 
+## What gets seeded on first run
+
+When the container starts for the first time (empty n8n volume), a one-shot `n8n-init` job runs before n8n itself and pre-populates:
+
+- The **Ollama (local)** credential (pointing at `host.docker.internal:11434`).
+- The **TBL4 Tool Server** workflow — publishes an OpenAPI spec at `GET /webhook/openapi.json` so OpenWebUI can list the classroom tools.
+- The **Summarise URL** workflow — the first reference tool; answers `POST /webhook/summarise-url` with an Ollama-generated summary of any fetched page.
+
+Both workflows are **imported and activated** automatically. You land on a working chain. Open them in the editor to see the sticky notes explaining the pattern.
+
+A `.tbl4-seeded` sentinel file in the n8n data volume makes the seed a one-shot — re-running the setup script is safe and won't clobber edits you've made.
+
 ## Shared folders and templates
 
 - **`./notes/`** — bind-mounted into the n8n container at `/data/notes`. Workflows that write Markdown files (e.g. the "save this as a note" pattern) land here, where you can open them in Finder / Explorer immediately.
-- **`./templates/`** — reusable workflow JSONs you can import from inside n8n (*Workflows → top-right menu → Import from File*). Start here:
-  - `dual-trigger.workflow.json` — one workflow, two entry points (Webhook + MCP Server Trigger), shared downstream logic. Pattern for exposing the same capability to OpenWebUI via either a plain HTTP tool or MCP.
+- **`./templates/`** — source JSONs for the workflows described above, plus extra patterns to import by hand:
+  - `tool-server.workflow.json` — the central OpenAPI spec. Auto-imported on first run.
+  - `summarise-url.workflow.json` — reference tool implementation. Auto-imported on first run.
+  - `dual-trigger.workflow.json` — one workflow, two entry points (Webhook + MCP Server Trigger), shared downstream logic. Pattern for exposing the same capability to OpenWebUI via either a plain HTTP tool or MCP. **Not** auto-imported; import manually when you reach Ex 12.
 
 ## Using it next time
 

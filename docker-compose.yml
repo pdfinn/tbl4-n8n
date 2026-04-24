@@ -1,7 +1,10 @@
 services:
-  # One-shot: seeds a pre-configured Ollama credential into the n8n database on
-  # a fresh volume, so students don't have to create it by hand on first run.
-  # Runs, imports, touches a sentinel, and exits. n8n waits for it to finish.
+  # One-shot: seeds a pre-configured Ollama credential and a pair of starter
+  # workflows (tool-server + summarise-url) into the n8n database on a fresh
+  # volume, then activates them. Students land on a working chain without
+  # touching any UI. Runs, imports, touches a sentinel, and exits; n8n waits
+  # for it to finish. Safe to re-run — the sentinel makes it a no-op after
+  # the first successful seed.
   n8n-init:
     image: docker.n8n.io/n8nio/n8n:2.18.2
     container_name: n8n-init
@@ -9,6 +12,8 @@ services:
     volumes:
       - n8n_data:/home/node/.n8n
       - ./n8n-init/credentials.json:/tmp/credentials.json:ro
+      - ./templates/tool-server.workflow.json:/tmp/workflows/tool-server.workflow.json:ro
+      - ./templates/summarise-url.workflow.json:/tmp/workflows/summarise-url.workflow.json:ro
     environment:
       - N8N_ENCRYPTION_KEY=tbl4-classroom-key-2026
     entrypoint: ["/bin/sh", "-c"]
@@ -16,11 +21,15 @@ services:
       - |
         set -e
         if [ -f /home/node/.n8n/.tbl4-seeded ]; then
-          echo "credentials already seeded; skipping"
+          echo "already seeded; skipping"
           exit 0
         fi
         echo "seeding Ollama credential..."
         n8n import:credentials --input=/tmp/credentials.json
+        echo "importing starter workflows..."
+        n8n import:workflow --separate --input=/tmp/workflows/
+        echo "activating workflows..."
+        n8n update:workflow --all --active=true
         touch /home/node/.n8n/.tbl4-seeded
         echo "done"
     restart: "no"

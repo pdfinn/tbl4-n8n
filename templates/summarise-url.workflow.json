@@ -1,0 +1,146 @@
+{
+  "name": "Summarise URL (classroom starter)",
+  "nodes": [
+    {
+      "id": "webhook",
+      "name": "POST /webhook/summarise-url",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 400],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "summarise-url",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "fetch",
+      "name": "Fetch URL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 400],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.body.url }}",
+        "responseFormat": "text",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "neverError": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "cap",
+      "name": "Cap content length",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [720, 400],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "content",
+              "type": "string",
+              "value": "={{ String($json.data || '').slice(0, 6000) }}"
+            },
+            {
+              "id": "2",
+              "name": "focus",
+              "type": "string",
+              "value": "={{ $('POST /webhook/summarise-url').item.json.body.focus || '' }}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "chain",
+      "name": "Summarise",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [960, 400],
+      "parameters": {
+        "promptType": "define",
+        "text": "=Summarise the following web page in 5 short bullet points. Keep the summary factual; skip navigation chrome, footers, and boilerplate.\n\n{{ $json.focus ? ('Focus especially on: ' + $json.focus + '.\\n\\n') : '' }}Page content:\n{{ $json.content }}"
+      }
+    },
+    {
+      "id": "ollama",
+      "name": "Ollama Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [960, 600],
+      "parameters": {
+        "model": "llama3.2:latest"
+      },
+      "credentials": {
+        "ollamaApi": {
+          "id": "tbl4OllamaLocal",
+          "name": "Ollama (local)"
+        }
+      }
+    },
+    {
+      "id": "respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1240, 400],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ ({ summary: $json.text }) }}"
+      }
+    },
+    {
+      "id": "note-goal",
+      "name": "What this is",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [200, 60],
+      "parameters": {
+        "width": 960,
+        "height": 240,
+        "color": 7,
+        "content": "## Summarise URL — classroom starter\n\nThe first tool the chat model calls. Flow:\n\n1. **Webhook** receives `{ url, focus? }` from OpenWebUI.\n2. **Fetch URL** downloads the page (text, never-error so we don't 500 on a bad URL).\n3. **Cap content length** trims to 6 KB so we don't blow the LLM's context window.\n4. **Summarise** (Basic LLM Chain + Ollama sub-node) returns a 5-bullet summary.\n5. **Respond** sends `{ summary: ... }` back to OpenWebUI.\n\nThis workflow is **auto-imported and published** by the tbl4-n8n init container. You can edit it in place — your changes persist in the n8n volume."
+      }
+    },
+    {
+      "id": "note-model",
+      "name": "Model note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [880, 780],
+      "parameters": {
+        "width": 340,
+        "height": 180,
+        "color": 4,
+        "content": "## Model\n\nPinned to `llama3.2:latest` — that's the default `MODEL` students pull during `tbl4-local-llm` setup. If you changed `.env` to a different model, update this node to match (or the Ollama node will 404).\n\nFirst call after a cold Ollama takes 20-40s; subsequent calls are fast."
+      }
+    }
+  ],
+  "connections": {
+    "POST /webhook/summarise-url": {
+      "main": [[{ "node": "Fetch URL", "type": "main", "index": 0 }]]
+    },
+    "Fetch URL": {
+      "main": [[{ "node": "Cap content length", "type": "main", "index": 0 }]]
+    },
+    "Cap content length": {
+      "main": [[{ "node": "Summarise", "type": "main", "index": 0 }]]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [[{ "node": "Summarise", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "Summarise": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" }
+}
