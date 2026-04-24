@@ -2,6 +2,32 @@
 
 Reusable starting points. Import from inside n8n: **Workflows → top-right menu → Import from File**.
 
+## `tool-server.workflow.json`
+
+**The one-time setup that makes every exercise's webhook callable from OpenWebUI.**
+
+OpenWebUI's Tool Servers feature doesn't talk directly to webhooks — it talks to an **OpenAPI 3.x spec**. This workflow publishes that spec over a GET webhook. Register it once in OpenWebUI; then, as students complete each exercise, they append a new path to the spec inside this workflow and the new tool appears automatically.
+
+### Setup (do this first)
+
+1. Import this workflow into n8n. **Activate** it.
+2. In OpenWebUI → **Admin Settings → Tools → Tool Servers → Add Tool Server**:
+   - URL: `http://host.docker.internal:5678/webhook/tools`
+   - (OpenWebUI will append `/openapi.json` automatically.)
+3. Click *Verify* or save. OpenWebUI fetches the spec and lists the tools.
+
+### To add a new tool later
+
+1. Build the tool's workflow (its Webhook trigger, its logic, its response).
+2. Activate that workflow.
+3. Open the **OpenAPI Spec** node inside `tool-server.workflow.json`, add a new entry under `paths: { ... }` describing the new endpoint. Copy the `summarise-url` example; edit `operationId`, `summary`, `description`, `requestBody`, `responses`.
+4. Save. The spec node now emits the updated spec on the next fetch.
+5. In OpenWebUI → Tool Servers → click refresh. The new tool appears.
+
+The `description` field is what the LLM reads to decide *when* to call the tool. Write it as an instruction to the model, not a developer comment.
+
+## `dual-trigger.workflow.json`
+
 ## `dual-trigger.workflow.json`
 
 One workflow, two entry points, shared business logic:

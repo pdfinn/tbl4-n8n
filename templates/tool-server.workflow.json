@@ -1,0 +1,72 @@
+{
+  "name": "TBL4 Tool Server (OpenAPI spec for OpenWebUI)",
+  "nodes": [
+    {
+      "id": "webhook",
+      "name": "GET /webhook/tools/openapi.json",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [320, 400],
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "tools/openapi.json",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "respond",
+      "name": "Respond with OpenAPI spec",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [640, 400],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ ({\n  openapi: '3.1.0',\n  info: {\n    title: 'TBL4 Classroom Tools',\n    description: 'Workflows built by the student, exposed as OpenAPI tools for OpenWebUI. Each exercise in Unit 2 adds a new path here.',\n    version: '1.0.0'\n  },\n  servers: [{ url: 'http://host.docker.internal:5678' }],\n  paths: {\n    '/webhook/summarise-url': {\n      post: {\n        operationId: 'summariseUrl',\n        summary: 'Summarise a web page',\n        description: 'Fetches the given URL and returns a short summary. Use when the user asks you to summarise, explain, or describe the content of a URL.',\n        requestBody: {\n          required: true,\n          content: {\n            'application/json': {\n              schema: {\n                type: 'object',\n                required: ['url'],\n                properties: {\n                  url: { type: 'string', format: 'uri', description: 'The page to summarise.' },\n                  focus: { type: 'string', description: 'Optional topic to emphasise.' }\n                }\n              }\n            }\n          }\n        },\n        responses: {\n          '200': {\n            description: 'The summary.',\n            content: {\n              'application/json': {\n                schema: {\n                  type: 'object',\n                  properties: { summary: { type: 'string' } }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "note-purpose",
+      "name": "What this is",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [240, 60],
+      "parameters": {
+        "width": 900,
+        "height": 240,
+        "color": 7,
+        "content": "## Central Tool Server\n\nThis workflow publishes a single **OpenAPI 3.1 spec** listing every tool the classroom uses. OpenWebUI fetches the spec from `GET /webhook/tools/openapi.json`, reads it, and the chat model can then call any of the tools listed inside.\n\n**Register once in OpenWebUI** → Admin Settings → Tools → **Tool Servers** → Add:\n\n- URL: `http://host.docker.internal:5678/webhook/tools`  *(OpenWebUI appends `/openapi.json` to discover the spec)*\n\n**Quick sanity check before touching OpenWebUI:**\n```\ncurl http://localhost:5678/webhook/tools/openapi.json\n```\nShould return the JSON spec. If it doesn't, the workflow isn't activated."
+      }
+    },
+    {
+      "id": "note-edit",
+      "name": "How to add a tool",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [240, 600],
+      "parameters": {
+        "width": 900,
+        "height": 260,
+        "color": 4,
+        "content": "## How to add a new tool\n\n1. Build the tool's workflow in a separate n8n workflow (e.g. Ex 8 builds `/webhook/summarise-url`).\n2. Activate that workflow.\n3. Come back here, open the **Respond with OpenAPI spec** node, and add a new entry to the `paths: { ... }` object in the response body. Copy the `summarise-url` block as a template; change path, `operationId`, `summary`, `description`, `requestBody`, `responses`.\n4. Save this workflow.\n5. In OpenWebUI → Admin Settings → Tools → Tool Servers → refresh. The new tool appears in the Tools list and the chat model can call it.\n\n**The `description` field drives tool selection by the LLM.** Write it as an instruction (\"Use when the user asks to summarise a URL\"), not a developer comment."
+      }
+    }
+  ],
+  "connections": {
+    "GET /webhook/tools/openapi.json": {
+      "main": [
+        [
+          { "node": "Respond with OpenAPI spec", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" }
+}
