@@ -112,6 +112,18 @@ Double-click the file for your operating system:
 
 ---
 
+## License
+
+Copyright (c) 2026 Tarkas Brainlab IV (TBL4).
+
+Licensed under the [PolyForm Noncommercial License 1.0.0](./LICENSE).
+You may use, modify, and redistribute this software for any noncommercial
+purpose, including personal study, research, teaching, and use by
+educational or other noncommercial organizations. Commercial use requires
+a separate license from the copyright holder.
+
+---
+
 <p align="center">
   <a href="https://github.com/Tarkas-Brainlab-IV">Tarkas Brainlab IV</a>
 </p>
