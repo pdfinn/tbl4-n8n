@@ -1,6 +1,8 @@
 <p align="center">
-  <h1 align="center">Tarkas Brainlab IV — n8n</h1>
+  <img src="logo.png" alt="Tarkas Brainlab IV" width="200">
 </p>
+
+<h1 align="center">Tarkas Brainlab IV — n8n</h1>
 
 <p align="center">
   Run n8n locally to build and automate workflows with a visual editor.<br>
